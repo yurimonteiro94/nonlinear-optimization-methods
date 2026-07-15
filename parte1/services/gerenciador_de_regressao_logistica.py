@@ -1,5 +1,7 @@
 import math
 
+import numpy as np
+
 from services.constantes import Constantes
 
 
@@ -14,6 +16,52 @@ class GerenciadorDeRegressaoLogistica:
         exponencial = math.exp(valor)
 
         return exponencial / (1.0 + exponencial)
+
+    @staticmethod
+    def retornarListaDeProbabilidades(modeloLogistico, listaDeEntradasNormalizadas):
+        if(modeloLogistico is None):
+            return None
+
+        elif(listaDeEntradasNormalizadas is None):
+            return None
+
+        elif(len(listaDeEntradasNormalizadas) == Constantes.QUANTIDADE_NULA):
+            return None
+
+        listaDePesos = modeloLogistico.getListaDePesos()
+
+        if(listaDePesos is None):
+            return None
+
+        try:
+            matrizDeEntradas = np.asarray(listaDeEntradasNormalizadas, dtype=float)
+            vetorDePesos = np.asarray(listaDePesos, dtype=float)
+
+            if(matrizDeEntradas.ndim != Constantes.QUANTIDADE_DE_DIMENSOES_DA_MATRIZ):
+                return None
+
+            elif(vetorDePesos.ndim != Constantes.QUANTIDADE_DE_DIMENSOES_DO_VETOR):
+                return None
+
+            elif(matrizDeEntradas.shape[Constantes.INDICE_DA_QUANTIDADE_DE_COLUNAS] != vetorDePesos.shape[Constantes.INDICE_DA_QUANTIDADE_DE_LINHAS]):
+                return None
+
+            vetorDeCombinacoesLineares = matrizDeEntradas @ vetorDePesos
+            vetorDeCombinacoesLineares = vetorDeCombinacoesLineares + modeloLogistico.getVies()
+
+            vetorDeProbabilidades = np.empty_like(vetorDeCombinacoesLineares)
+            vetorDeIndicesNaoNegativos = vetorDeCombinacoesLineares >= Constantes.QUANTIDADE_NULA
+            vetorDeIndicesNegativos = np.logical_not(vetorDeIndicesNaoNegativos)
+
+            vetorDeProbabilidades[vetorDeIndicesNaoNegativos] = 1.0 / (1.0 + np.exp(-vetorDeCombinacoesLineares[vetorDeIndicesNaoNegativos]))
+
+            vetorDeExponenciais = np.exp(vetorDeCombinacoesLineares[vetorDeIndicesNegativos])
+            vetorDeProbabilidades[vetorDeIndicesNegativos] = vetorDeExponenciais / (1.0 + vetorDeExponenciais)
+
+            return vetorDeProbabilidades.tolist()
+
+        except Exception:
+            return None
 
     @staticmethod
     def retornarProbabilidade(modeloLogistico, listaDeCaracteristicas):
@@ -70,30 +118,24 @@ class GerenciadorDeRegressaoLogistica:
         elif(len(listaDeEntradasNormalizadas) != len(listaDeSaidasEsperadas)):
             return None
 
-        soma = 0.0
-        indice = Constantes.INDICE_INICIAL
-        quantidadeDeAmostras = len(listaDeEntradasNormalizadas)
+        listaDeProbabilidades = GerenciadorDeRegressaoLogistica.retornarListaDeProbabilidades(modeloLogistico, listaDeEntradasNormalizadas)
 
-        while(indice < quantidadeDeAmostras):
-            probabilidade = GerenciadorDeRegressaoLogistica.retornarProbabilidade(modeloLogistico, listaDeEntradasNormalizadas[indice])
+        if(listaDeProbabilidades is None):
+            return None
 
-            if(probabilidade is None):
-                return None
+        try:
+            vetorDeProbabilidades = np.asarray(listaDeProbabilidades, dtype=float)
+            vetorDeSaidasEsperadas = np.asarray(listaDeSaidasEsperadas, dtype=float)
 
-            if(probabilidade < Constantes.MENOR_PROBABILIDADE_PERMITIDA):
-                probabilidade = Constantes.MENOR_PROBABILIDADE_PERMITIDA
+            vetorDeProbabilidades = np.clip(vetorDeProbabilidades, Constantes.MENOR_PROBABILIDADE_PERMITIDA, Constantes.MAIOR_PROBABILIDADE_PERMITIDA)
 
-            elif(probabilidade > Constantes.MAIOR_PROBABILIDADE_PERMITIDA):
-                probabilidade = Constantes.MAIOR_PROBABILIDADE_PERMITIDA
+            vetorDePerdas = vetorDeSaidasEsperadas * np.log(vetorDeProbabilidades)
+            vetorDePerdas = vetorDePerdas + (Constantes.OCUPACAO_PRESENTE - vetorDeSaidasEsperadas) * np.log(Constantes.OCUPACAO_PRESENTE - vetorDeProbabilidades)
 
-            saidaEsperada = listaDeSaidasEsperadas[indice]
+            return float(-np.mean(vetorDePerdas))
 
-            soma = soma - saidaEsperada * math.log(probabilidade)
-            soma = soma - (Constantes.OCUPACAO_PRESENTE - saidaEsperada) * math.log(Constantes.OCUPACAO_PRESENTE - probabilidade)
-
-            indice = indice + Constantes.INCREMENTO_UNITARIO
-
-        return soma / quantidadeDeAmostras
+        except Exception:
+            return None
 
     @staticmethod
     def retornarGradienteDosPesos(modeloLogistico, listaDeEntradasNormalizadas, listaDeSaidasEsperadas):
@@ -112,52 +154,24 @@ class GerenciadorDeRegressaoLogistica:
         elif(len(listaDeEntradasNormalizadas) != len(listaDeSaidasEsperadas)):
             return None
 
-        listaDePesos = modeloLogistico.getListaDePesos()
+        listaDeProbabilidades = GerenciadorDeRegressaoLogistica.retornarListaDeProbabilidades(modeloLogistico, listaDeEntradasNormalizadas)
 
-        if(listaDePesos is None):
+        if(listaDeProbabilidades is None):
             return None
 
-        quantidadeDePesos = len(listaDePesos)
-        listaDoGradiente = []
-        indiceDoPeso = Constantes.INDICE_INICIAL
+        try:
+            matrizDeEntradas = np.asarray(listaDeEntradasNormalizadas, dtype=float)
+            vetorDeSaidasEsperadas = np.asarray(listaDeSaidasEsperadas, dtype=float)
+            vetorDeProbabilidades = np.asarray(listaDeProbabilidades, dtype=float)
 
-        while(indiceDoPeso < quantidadeDePesos):
-            listaDoGradiente.append(0.0)
-            indiceDoPeso = indiceDoPeso + Constantes.INCREMENTO_UNITARIO
+            vetorDeErros = vetorDeProbabilidades - vetorDeSaidasEsperadas
+            vetorDoGradiente = matrizDeEntradas.T @ vetorDeErros
+            vetorDoGradiente = vetorDoGradiente / matrizDeEntradas.shape[Constantes.INDICE_DA_QUANTIDADE_DE_LINHAS]
 
-        quantidadeDeAmostras = len(listaDeEntradasNormalizadas)
-        indiceDaAmostra = Constantes.INDICE_INICIAL
+            return vetorDoGradiente.tolist()
 
-        while(indiceDaAmostra < quantidadeDeAmostras):
-            listaDeCaracteristicas = listaDeEntradasNormalizadas[indiceDaAmostra]
-
-            if(listaDeCaracteristicas is None):
-                return None
-
-            elif(len(listaDeCaracteristicas) != quantidadeDePesos):
-                return None
-
-            probabilidade = GerenciadorDeRegressaoLogistica.retornarProbabilidade(modeloLogistico, listaDeCaracteristicas)
-
-            if(probabilidade is None):
-                return None
-
-            erro = probabilidade - listaDeSaidasEsperadas[indiceDaAmostra]
-            indiceDoPeso = Constantes.INDICE_INICIAL
-
-            while(indiceDoPeso < quantidadeDePesos):
-                listaDoGradiente[indiceDoPeso] = listaDoGradiente[indiceDoPeso] + erro * listaDeCaracteristicas[indiceDoPeso]
-                indiceDoPeso = indiceDoPeso + Constantes.INCREMENTO_UNITARIO
-
-            indiceDaAmostra = indiceDaAmostra + Constantes.INCREMENTO_UNITARIO
-
-        indiceDoPeso = Constantes.INDICE_INICIAL
-
-        while(indiceDoPeso < quantidadeDePesos):
-            listaDoGradiente[indiceDoPeso] = listaDoGradiente[indiceDoPeso] / quantidadeDeAmostras
-            indiceDoPeso = indiceDoPeso + Constantes.INCREMENTO_UNITARIO
-
-        return listaDoGradiente
+        except Exception:
+            return None
 
     @staticmethod
     def retornarGradienteDoVies(modeloLogistico, listaDeEntradasNormalizadas, listaDeSaidasEsperadas):
@@ -176,20 +190,21 @@ class GerenciadorDeRegressaoLogistica:
         elif(len(listaDeEntradasNormalizadas) != len(listaDeSaidasEsperadas)):
             return None
 
-        soma = 0.0
-        quantidadeDeAmostras = len(listaDeEntradasNormalizadas)
-        indiceDaAmostra = Constantes.INDICE_INICIAL
+        listaDeProbabilidades = GerenciadorDeRegressaoLogistica.retornarListaDeProbabilidades(modeloLogistico, listaDeEntradasNormalizadas)
 
-        while(indiceDaAmostra < quantidadeDeAmostras):
-            probabilidade = GerenciadorDeRegressaoLogistica.retornarProbabilidade(modeloLogistico, listaDeEntradasNormalizadas[indiceDaAmostra])
+        if(listaDeProbabilidades is None):
+            return None
 
-            if(probabilidade is None):
-                return None
+        try:
+            vetorDeProbabilidades = np.asarray(listaDeProbabilidades, dtype=float)
+            vetorDeSaidasEsperadas = np.asarray(listaDeSaidasEsperadas, dtype=float)
 
-            soma = soma + probabilidade - listaDeSaidasEsperadas[indiceDaAmostra]
-            indiceDaAmostra = indiceDaAmostra + Constantes.INCREMENTO_UNITARIO
+            vetorDeErros = vetorDeProbabilidades - vetorDeSaidasEsperadas
 
-        return soma / quantidadeDeAmostras
+            return float(np.mean(vetorDeErros))
+
+        except Exception:
+            return None
 
     @staticmethod
     def retornarNormaDoGradiente(listaDoGradienteDosPesos, gradienteDoVies):
@@ -199,15 +214,15 @@ class GerenciadorDeRegressaoLogistica:
         elif(gradienteDoVies is None):
             return None
 
-        somaDosQuadrados = gradienteDoVies * gradienteDoVies
-        indiceDoPeso = Constantes.INDICE_INICIAL
-        quantidadeDePesos = len(listaDoGradienteDosPesos)
+        try:
+            vetorDoGradiente = np.asarray(listaDoGradienteDosPesos, dtype=float)
+            somaDosQuadrados = np.dot(vetorDoGradiente, vetorDoGradiente)
+            somaDosQuadrados = somaDosQuadrados + gradienteDoVies * gradienteDoVies
 
-        while(indiceDoPeso < quantidadeDePesos):
-            somaDosQuadrados = somaDosQuadrados + listaDoGradienteDosPesos[indiceDoPeso] * listaDoGradienteDosPesos[indiceDoPeso]
-            indiceDoPeso = indiceDoPeso + Constantes.INCREMENTO_UNITARIO
+            return float(math.sqrt(somaDosQuadrados))
 
-        return math.sqrt(somaDosQuadrados)
+        except Exception:
+            return None
 
     @staticmethod
     def retornarAcuracia(modeloLogistico, listaDeEntradasNormalizadas, listaDeSaidasEsperadas):
@@ -226,19 +241,19 @@ class GerenciadorDeRegressaoLogistica:
         elif(len(listaDeEntradasNormalizadas) != len(listaDeSaidasEsperadas)):
             return None
 
-        quantidadeDeAcertos = Constantes.QUANTIDADE_NULA
-        quantidadeDeAmostras = len(listaDeEntradasNormalizadas)
-        indiceDaAmostra = Constantes.INDICE_INICIAL
+        listaDeProbabilidades = GerenciadorDeRegressaoLogistica.retornarListaDeProbabilidades(modeloLogistico, listaDeEntradasNormalizadas)
 
-        while(indiceDaAmostra < quantidadeDeAmostras):
-            classePrevista = GerenciadorDeRegressaoLogistica.retornarClasse(modeloLogistico, listaDeEntradasNormalizadas[indiceDaAmostra])
+        if(listaDeProbabilidades is None):
+            return None
 
-            if(classePrevista is None):
-                return None
+        try:
+            vetorDeProbabilidades = np.asarray(listaDeProbabilidades, dtype=float)
+            vetorDeSaidasEsperadas = np.asarray(listaDeSaidasEsperadas, dtype=int)
 
-            if(classePrevista == listaDeSaidasEsperadas[indiceDaAmostra]):
-                quantidadeDeAcertos = quantidadeDeAcertos + Constantes.INCREMENTO_UNITARIO
+            vetorDeClassesPrevistas = vetorDeProbabilidades >= Constantes.LIMIAR_DE_CLASSIFICACAO
+            vetorDeClassesPrevistas = vetorDeClassesPrevistas.astype(int)
 
-            indiceDaAmostra = indiceDaAmostra + Constantes.INCREMENTO_UNITARIO
+            return float(np.mean(vetorDeClassesPrevistas == vetorDeSaidasEsperadas))
 
-        return quantidadeDeAcertos / quantidadeDeAmostras
+        except Exception:
+            return None
