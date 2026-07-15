@@ -1,0 +1,10 @@
+__pycache__/ 
+*.pyc 
+*.pyo 
+.vscode/ 
+.idea/ 
+.venv/ 
+venv/ 
+parte1/resultados/ 
+parte1/graficos/ 
+PRO6006_2026_lista3.pdf 
