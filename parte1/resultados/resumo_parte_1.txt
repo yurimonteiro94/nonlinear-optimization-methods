@@ -1,0 +1,34 @@
+Resumo da Parte 1
+
+Método = Steepest Descent
+Iterações ou épocas = 300
+Tempo = 9.724591800011694
+Função objetivo final = 0.10062349085264775
+Acurácia de treinamento = 0.9820038910505836
+Acurácia de teste = 0.9861381322957199
+
+Método = SGD
+Iterações ou épocas = 25
+Tempo = 2.056954399915412
+Função objetivo final = 0.06051296542721425
+Acurácia de treinamento = 0.9873540856031129
+Acurácia de teste = 0.9953793774319066
+
+Método = Momentum
+Iterações ou épocas = 300
+Tempo = 9.158996199956164
+Função objetivo final = 0.06166153237498526
+Acurácia de treinamento = 0.9874148832684825
+Acurácia de teste = 0.9946498054474708
+
+Método = Nesterov
+Iterações ou épocas = 300
+Tempo = 9.489439000142738
+Função objetivo final = 0.06175942032685365
+Acurácia de treinamento = 0.9874148832684825
+Acurácia de teste = 0.9946498054474708
+
+Método com maior acurácia de teste = SGD
+Maior acurácia de teste = 0.9953793774319066
+Método com menor tempo computacional = SGD
+Menor tempo computacional = 2.056954399915412

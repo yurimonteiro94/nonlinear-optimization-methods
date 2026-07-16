@@ -1,0 +1,14 @@
+Exercício 1 - Steepest Descent
+
+Learning rate = 0.1
+Tolerância = 1e-06
+Número máximo de iterações = 1000
+Quantidade de iterações executadas = 1000
+Motivo da parada = Número máximo de iterações atingido.
+Função objetivo inicial = 0.6931471805599452
+Função objetivo final = 0.07027977058650177
+Norma inicial do gradiente = 0.5978794604915985
+Norma final do gradiente = 0.01150001991478139
+Acurácia de treinamento = 0.9873540856031129
+Acurácia de teste = 0.9941634241245136
+Tempo computacional em segundos = 30.910350099904463

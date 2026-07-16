@@ -1,0 +1,12 @@
+Exercício 3 - Momentum
+
+Learning rate = 0.1
+Beta = 0.9
+Tolerância = 1e-06
+Quantidade de iterações = 629
+Motivo da parada = Variação da função objetivo menor ou igual à tolerância.
+Função objetivo inicial = 0.6931471805599452
+Função objetivo final = 0.060711772839116857
+Acurácia de treinamento = 0.9873540856031129
+Acurácia de teste = 0.9953793774319066
+Tempo computacional em segundos = 20.220098299905658

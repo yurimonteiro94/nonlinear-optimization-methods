@@ -1,0 +1,13 @@
+Exercício 2 - Stochastic Gradient Descent
+
+Learning rate = 0.1
+Tamanho do mini-batch = 32
+Tolerância = 1e-06
+Número máximo de épocas = 100
+Quantidade de épocas executadas = 25
+Motivo da parada = Variação da função objetivo menor ou igual à tolerância.
+Função objetivo inicial = 0.08287226545486026
+Função objetivo final = 0.06051296542721425
+Acurácia de treinamento = 0.9873540856031129
+Acurácia de teste = 0.9953793774319066
+Tempo computacional em segundos = 2.1806802998762578

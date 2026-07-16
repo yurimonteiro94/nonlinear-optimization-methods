@@ -1,0 +1,12 @@
+Steepest Descent com busca linear exata
+
+Ponto final = [0.9999999963153281, 2.999999996327556]
+Ponto ótimo analítico = [1.000000000000001, 3.0000000000000013]
+Função objetivo inicial = 96.8
+Função objetivo final = -8.881784197001252e-16
+Norma inicial do gradiente = 26.883452159274487
+Norma final do gradiente = 1.0409724525180051e-09
+Quantidade de iterações = 11
+Tempo computacional em segundos = 0.00054390006698668
+Número de condição da Hessiana = 18.999999999999996
+Motivo da parada = Norma do gradiente menor ou igual à tolerância.

@@ -1,0 +1,12 @@
+Exercício 5 - Comparação
+
+Iterações do Steepest Descent = 197
+Iterações do Newton = 1
+Tempo do Steepest Descent = 0.00956519995816052
+Tempo do Newton = 9.909993968904018e-05
+Função objetivo final do Steepest Descent = -3.552713678800501e-15
+Função objetivo final do Newton = -3.552713678800501e-15
+
+O Steepest Descent utiliza somente o gradiente e tende a alternar direções nas regiões alongadas das curvas de nível.
+O método de Newton incorpora a Hessiana e corrige a escala e o acoplamento entre as variáveis.
+Para uma função quadrática com Hessiana constante e positiva definida, Newton alcança o ponto ótimo em uma única atualização, desconsiderando erros numéricos.

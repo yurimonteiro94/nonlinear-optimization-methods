@@ -1,0 +1,13 @@
+Exercício 5
+Método de Newton
+
+Ponto final = [1.000000000000007, 3.000000000000007, 1.000000000000007, 3.000000000000007]
+Ponto ótimo analítico = [1.0000000000000007, 3.0000000000000004, 1.0000000000000004, 3.0000000000000004]
+Função objetivo inicial = 290.40000000000003
+Função objetivo final = -3.552713678800501e-15
+Norma inicial do gradiente = 60.113226498001254
+Norma final do gradiente = 3.580361673049448e-15
+Quantidade de iterações = 1
+Tempo computacional em segundos = 9.909993968904018e-05
+Número de condição da Hessiana = 21.92703995032521
+Motivo da parada = Norma do gradiente menor ou igual à tolerância.

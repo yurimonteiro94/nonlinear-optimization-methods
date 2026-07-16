@@ -1,0 +1,8 @@
+Comparação da Parte 2
+
+Iterações do Steepest Descent = 11
+Iterações do Newton = 1
+Tempo do Steepest Descent = 0.00054390006698668
+Tempo do Newton = 0.00010890001431107521
+O método de Newton utiliza a Hessiana e, para a função quadrática, alcança o ótimo em uma única atualização.
+O Steepest Descent utiliza apenas o gradiente e pode apresentar trajetória em zigue-zague, principalmente em problemas mal condicionados.
